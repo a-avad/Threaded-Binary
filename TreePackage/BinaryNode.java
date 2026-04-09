@@ -12,6 +12,8 @@ class BinaryNode<T> {
     private BinaryNode<T> rightChild;
     // ADD PRIVATE VARIABLEs TO HOLD A PRARENT REFERENCE 
     // AND A THREAD REFERENCE HERE
+    private BinaryNode<T> parent;
+    private BinaryNode<T> thread;
 
     public BinaryNode() {
         this(null); // Call next constructor
@@ -24,14 +26,24 @@ class BinaryNode<T> {
     public BinaryNode(T dataPortion, BinaryNode<T> newLeftChild,
             BinaryNode<T> newRightChild) {
         // MODIFY THIS CONSTRUCTOR
-        data = dataPortion;
-        leftChild = newLeftChild;
-        rightChild = newRightChild;
+        this(dataPortion, newLeftChild, newRightChild, null);
     } // end constructor
 
     // ADD TWO MORE CONSTRUCTORS
 
-    
+    public BinaryNode(T dataPortion, BinaryNode<T> newLeftChild,
+            BinaryNode<T> newRightChild, BinaryNode<T> parentNode) {
+        this(dataPortion, newLeftChild, newRightChild, parentNode, null);
+    }
+
+    public BinaryNode(T dataPortion, BinaryNode<T> newLeftChild,
+            BinaryNode<T> newRightChild, BinaryNode<T> parentNode, BinaryNode<T> threadNode) {
+        data = dataPortion;
+        leftChild = newLeftChild;
+        rightChild = newRightChild;
+        parent = parentNode;
+        thread = threadNode;
+    }
     
     
     /**
@@ -160,22 +172,97 @@ class BinaryNode<T> {
      */
     public BinaryNode<T> copy() {
         BinaryNode<T> newRoot = new BinaryNode<T>(data);
+        newRoot.setParent(null);
         if (leftChild != null) {
-            newRoot.setLeftChild(leftChild.copy());
+            newRoot.setLeftChild(leftChild.copy(newRoot));
+            newRoot.linkThreadOut(newRoot); //  thread left tree to right
         }
         if (rightChild != null) {
-            newRoot.setRightChild(rightChild.copy());
+            newRoot.setRightChild(rightChild.copy(newRoot));
+            BinaryNode<T> left = newRoot.getLeftInTree();
+            if(left != null) newRoot.setThread(left); //  thread root to right
+        }
+        return newRoot;
+
+    } // end copy
+
+    // ADD IN ANOTHER COPY THAT TAKES A PARENT REFERENCE
+    public BinaryNode<T> copy(BinaryNode<T> p) {
+        BinaryNode<T> newRoot = new BinaryNode<T>(data);
+        newRoot.setParent(p);
+        if (leftChild != null) {
+            newRoot.setLeftChild(leftChild.copy(newRoot));
+            newRoot.linkThreadOut(newRoot);
+        }
+        if (rightChild != null) {
+            newRoot.setRightChild(rightChild.copy(newRoot));
+            BinaryNode<T> left = newRoot.getLeftInTree();
+            if(left != null) newRoot.setThread(left);
         }
         
 
         return newRoot;
-    } // end copy
-
-    // ADD IN ANOTHER COPY THAT TAKES A PARENT REFERENCE
+    }
     
     // ADD IN ACCESSORS FOR THE PARENT REFERENCE
     // AND THREAD REFERENCE
 
+    public BinaryNode<T> getParent()
+    {
+        return parent;
+    }
+
+    public void setParent(BinaryNode<T> p)
+    {
+        parent = p;
+    }
+
+    public boolean hasParent()
+    {
+        return parent != null;
+    }
+
+    public BinaryNode<T> getThread()
+    {
+        return thread;
+    }
+
+    public void setThread(BinaryNode<T> t)
+    {
+        thread = t;
+    }
+
+    public boolean hasThread()
+    {
+        return thread != null;
+    }
+    
+
+    public void linkThreadOut(BinaryNode<T> link)
+    {
+        if(leftChild != null)
+        {
+            BinaryNode<T> right = leftChild;
+            // sets rightmost thread to link
+            while(right.hasRightChild())
+            {
+                right = right.getRightChild();
+            }
+            right.setThread(link);
+        }
+    }
+
+    public BinaryNode<T> getLeftInTree()
+    {
+        if(!hasRightChild()) return null;
+        BinaryNode<T> left = rightChild;
+        // sets leftmost thread to link
+        while(left.hasLeftChild())
+        {
+            left = left.getLeftChild();
+        }
+        return left;
+    }
 
         
 } // end BinaryNode

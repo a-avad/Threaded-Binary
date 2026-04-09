@@ -41,6 +41,8 @@ public class BinaryTree<T> implements BinaryTreeInterface<T>
         if ((leftTree != null) && !leftTree.isEmpty()) {
             root.setLeftChild(leftTree.root);
             // ADD CODE TO SET THE PARENT AND THREAD OF THE LEFT CHILD
+            leftTree.root.setParent(root);
+            root.linkThreadOut(root);
         }
 
         if ((rightTree != null) && !rightTree.isEmpty()) {
@@ -51,6 +53,9 @@ public class BinaryTree<T> implements BinaryTreeInterface<T>
             }
             // ADD CODE TO SET THE PARENT OF THE RiGHT CHILD
             // SET THE THREAD OUT OF THE ROOT
+            root.getRightChild().setParent(root);
+            BinaryNode<T> left = root.getLeftInTree();
+            if(left != null) root.setThread(left);
 
         } // end if
 
@@ -130,34 +135,42 @@ public class BinaryTree<T> implements BinaryTreeInterface<T>
         private BinaryNode<T> currentNode;
 
         public InorderIterator() {
-            nodeStack = new Stack<BinaryNode<T>>();
             currentNode = root;
+            if(currentNode != null)
+            {
+                // go to leftmost node (first in order)
+                while(currentNode.hasLeftChild())
+                {
+                    currentNode = currentNode.getLeftChild();
+                }
+            }
         } // end default constructor
 
         public boolean hasNext() {
-            return !nodeStack.isEmpty() || (currentNode != null);
+            return currentNode != null;
         } // end hasNext
 
         public T next() {
-            BinaryNode<T> nextNode = null;
+            if(currentNode == null) throw new NoSuchElementException();
 
-            // Find leftmost node with no left child
-            while (currentNode != null) {
-                nodeStack.push(currentNode);
-                currentNode = currentNode.getLeftChild();
-            } // end while
+            T value = currentNode.getData();
 
-            // Get leftmost node, then move to its right subtree
-            if (!nodeStack.isEmpty()) {
-                nextNode = nodeStack.pop();
-                assert nextNode != null; // Since nodeStack was not empty
-                // before the pop
-                currentNode = nextNode.getRightChild();
-            } else {
-                throw new NoSuchElementException();
+            if(currentNode.hasThread())
+            {
+                currentNode = currentNode.getThread(); // follow thread to next node
             }
+            else if(currentNode.hasRightChild())
+            {
+                // right then all the way left
+                currentNode = currentNode.getRightChild();
+                while(currentNode.hasLeftChild())
+                {
+                    currentNode = currentNode.getLeftChild();
+                }
+            }
+            else currentNode = null;
 
-            return nextNode.getData();
+            return value;
         } // end next
 
         public void remove() {

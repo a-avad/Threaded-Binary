@@ -18,6 +18,11 @@ public class Identifiers
         BinarySearchTree<String> unique = getPossibleIds(fileName);
         
         // ADD CODE HERE FOR PRINTING THE IDENTIFIERS
+        Iterator<String> iter = unique.getInorderIterator();
+        while(iter.hasNext())
+        {
+            System.out.println(iter.next());
+        }
     }
    
     /**
@@ -36,6 +41,19 @@ public class Identifiers
             input = new Scanner(new File(theFileName ) );
 
             //ADD CODE TO READ THE FILE AND CONSTRUCT THE BINARY SEARCH TREE
+            while(input.hasNextLine())
+            {
+                String l = input.nextLine();
+                StringTokenizer st = new StringTokenizer(l, " \t+*-/;=#@!{}");
+                while(st.hasMoreTokens())
+                {
+                    String token = st.nextToken();
+                    if(!token.isEmpty())
+                    {
+                        possible.add(token);
+                    }
+                }
+            }
         }
         catch(IOException e)
         {

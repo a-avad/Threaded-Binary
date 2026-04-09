@@ -104,9 +104,13 @@ public class BinarySearchTree<T extends Comparable<? super T>>
                 {
                     // Add node on the left side
                     found = true;
-                    
+                    BinaryNode<T> newNode = new BinaryNode<T>(newEntry);
+                    newNode.setParent(currentNode);
+                    newNode.setThread(currentNode);
                     // CHANGE THIS TO SET PARENT POINTERS AND FIX UP THREADS
-                    currentNode.setLeftChild(new BinaryNode<T>(newEntry));
+                    BinaryNode<T> pred = findInOrderPred(currentNode);
+                    if(pred != null) pred.setThread(newNode);
+                    currentNode.setLeftChild(newNode);
 
                 } // end if
             }
@@ -118,10 +122,12 @@ public class BinarySearchTree<T extends Comparable<? super T>>
                 else
                 {
                     // Add node on the right side
-                    found = true;
-                    
+                    BinaryNode<T> newNode = new BinaryNode<T>(newEntry);
+                    newNode.setParent(currentNode);
+                    newNode.setThread(currentNode.getThread());
                     // CHANGE THIS TO SET PARENT POINTERS AND FIX UP THREADS
-                    currentNode.setRightChild(new BinaryNode<T>(newEntry));
+                    currentNode.setThread(newNode);
+                    currentNode.setRightChild(newNode);
                     
                 } // end if
             } // end if
@@ -131,6 +137,29 @@ public class BinarySearchTree<T extends Comparable<? super T>>
     } // end addEntry
   
     
+    private BinaryNode<T> findInOrderPred(BinaryNode<T> node)
+    {
+        if(node.hasLeftChild())
+        {
+            BinaryNode<T> pred = node.getLeftChild();
+            while(pred.hasRightChild()) pred = pred.getRightChild();
+            return pred;
+        }
+        else{
+            BinaryNode<T> child = node;
+            BinaryNode<T> parent = node.getParent();
+            while(parent != null && parent.getLeftChild() == child)
+            {
+                child = parent;
+                parent = parent.getParent();
+            }
+            if(parent != null && parent.getRightChild() == child)
+            {
+                return parent;
+            }
+            return null;
+        }
+    }
     
     
     
@@ -249,9 +278,13 @@ public class BinarySearchTree<T extends Comparable<? super T>>
         assert (nodeToRemove.isLeaf() && childNode == null) ||
                 !nodeToRemove.isLeaf();
         
+        BinaryNode<T> pred = findInOrderPred(nodeToRemove);
+        if(pred != null) pred.setThread(nodeToRemove.getThread());
         if (nodeToRemove == getRootNode())
         {
             setRootNode(childNode);
+            if(childNode != null) childNode.setParent(null);
+            return;
         }
         else if (parentNode.getLeftChild() == nodeToRemove)
         {
@@ -261,6 +294,7 @@ public class BinarySearchTree<T extends Comparable<? super T>>
         {
             parentNode.setRightChild(childNode);
         }
+        if(childNode != null) childNode.setParent(parentNode);
             
     } // end removeNode
 
